@@ -1,8 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './lib/supabase'
+import type { Session, User } from '@supabase/supabase-js'
+
+interface Profile {
+  id: string
+  first_name: string
+  last_name: string
+  student_id: string
+  department: string
+}
 
 export default function App() {
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -79,8 +88,9 @@ function Auth() {
         if (error) throw error
         // Auto sign-in if confirm email is disabled
       }
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      setError(error.message)
     } finally {
       setLoading(false)
     }
@@ -142,27 +152,22 @@ function Auth() {
   )
 }
 
-function Dashboard({ user }: { user: any }) {
+function Dashboard({ user }: { user: User }) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [profiles, setProfiles] = useState<any[]>([])
-  const [myProfile, setMyProfile] = useState<any>(null)
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [myProfile, setMyProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchMyProfile()
-    fetchProfiles()
-  }, [])
-
-  const fetchMyProfile = async () => {
+  const fetchMyProfile = useCallback(async () => {
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
     setMyProfile(data)
-  }
+  }, [user.id])
 
-  const fetchProfiles = async (query = '') => {
+  const fetchProfiles = useCallback(async (query = '') => {
     setLoading(true)
     let q = supabase.from('profiles').select('*').limit(50)
     
@@ -173,7 +178,12 @@ function Dashboard({ user }: { user: any }) {
     const { data } = await q
     if (data) setProfiles(data)
     setLoading(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchMyProfile()
+    fetchProfiles()
+  }, [fetchMyProfile, fetchProfiles])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
