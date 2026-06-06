@@ -6,14 +6,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install dependencies (skip prepare script which tries to run husky)
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm install typescript && npm run build
+# Install typescript for build and run build
+RUN npm install typescript --no-save && npm run build
 
 # Stage 2: Production stage
 FROM node:20-alpine
