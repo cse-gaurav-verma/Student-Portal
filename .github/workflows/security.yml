@@ -18,32 +18,48 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
+          cache: 'npm'
 
-      # ---- GATE 2: SAST ----
+      - name: Install dependencies
+        run: npm ci
+
+      # ---- GATE 2: Linting ----
+      - name: Lint code
+        run: npm run lint
+
+      # ---- GATE 3: Build ----
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-anon-key
+
+      # ---- GATE 4: SAST ----
       - name: SAST (Semgrep)
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/owasp-top-ten
 
-      # ---- GATE 3: Dependency scan ----
+      # ---- GATE 5: Dependency scan ----
       - name: Dependency scan (npm audit)
         run: npm audit --audit-level=high
 
-      # ---- Build the image ----
-      - name: Build image
-        run: docker build -t secure-portal:${{ github.sha }} .
+      # ---- GATE 6: Build Docker image ----
+      - name: Build Docker image
+        run: docker build -t student-portal:${{ github.sha }} .
+        env:
+          DOCKER_BUILDKIT: 1
 
-      # ---- GATE 4: Image scan ----
+      # ---- GATE 7: Image scan ----
       - name: Image scan (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: secure-portal:${{ github.sha }}
+          image-ref: student-portal:${{ github.sha }}
           severity: HIGH,CRITICAL
           exit-code: '1'
           ignore-unfixed: true
 
-      # ---- GATE 5: Config / compliance scan ----
+      # ---- GATE 8: Config / compliance scan ----
       - name: Config scan (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
