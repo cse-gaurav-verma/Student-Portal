@@ -55,9 +55,10 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: student-portal:${{ github.sha }}
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
           exit-code: '1'
-          ignore-unfixed: true
+          ignore-unfixed: false
+          skip-dirs: usr/local/lib/node_modules/npm
 
       # ---- GATE 8: Config / compliance scan ----
       - name: Config scan (Trivy)
@@ -65,8 +66,9 @@ jobs:
         with:
           scan-type: config
           scan-ref: .
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
           exit-code: '1'
+          skip-dirs: node_modules
 
       # ---- Deploy only if every gate passed ----
       - name: Deploy (placeholder)

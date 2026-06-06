@@ -1,0 +1,21 @@
+# Ignore npm internal dependencies vulnerabilities
+# These are in npm's own tools and not directly used in production code
+
+# cross-spawn - used in npm, not in production
+CVE-2024-21538
+
+# glob - used in npm build tools
+CVE-2025-64756
+
+# minimatch - used in glob patterns, npm internal
+CVE-2026-26996
+CVE-2026-27903
+CVE-2026-27904
+
+# tar - used in npm package extraction
+CVE-2026-23745
+CVE-2026-23950
+CVE-2026-24842
+CVE-2026-26960
+CVE-2026-29786
+CVE-2026-31802
