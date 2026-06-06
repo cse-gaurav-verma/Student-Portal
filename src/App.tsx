@@ -65,6 +65,8 @@ function Auth() {
     setLoading(true)
     setError('')
 
+
+    
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -86,7 +88,6 @@ function Auth() {
           }
         })
         if (error) throw error
-        // Auto sign-in if confirm email is disabled
       }
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err))
